@@ -1,24 +1,24 @@
 function [ Y ,BW2] = BackGround( I )
-% Çø·Ö±³¾°ÓëÏ¸°û
-% Í¨¹ıÖ±·½Í¼ãĞÖµµÄ·½·¨£¬Ñ¡È¡Ò»¸ö½ÏµÍµÄ¹ÈÇøÓòÖµ½øĞĞ·Ö¸î
-% ¾ÖÏŞÔÚÓÚÏ¸°û·ÖÉ¢£¬±³¾°Ã÷ÏÔÎª°×µÄÇĞÆ¬Í¼Ïñ
+% Separate cell from the backround åŒºåˆ†èƒŒæ™¯ä¸ç»†èƒ
+% Via histogram thresholding method to find a value to segmenté€šè¿‡ç›´æ–¹å›¾é˜ˆå€¼çš„æ–¹æ³•ï¼Œé€‰å–ä¸€ä¸ªè¾ƒä½çš„è°·åŒºåŸŸå€¼è¿›è¡Œåˆ†å‰²
+% Limitation: performed not well on overlapped cells and dark backgound  å±€é™åœ¨äºç»†èƒåˆ†æ•£ï¼ŒèƒŒæ™¯æ˜æ˜¾ä¸ºç™½çš„åˆ‡ç‰‡å›¾åƒ
 
 
-%% ³õÊ¼»¯
+%% Initialization åˆå§‹åŒ–
 color_origin=I;
-origin_gray=rgb2gray(color_origin); %×ª»»Îª»Ò¶ÈÍ¼Ïñ
+origin_gray=rgb2gray(color_origin); % Convert original picture to gray level è½¬æ¢ä¸ºç°åº¦å›¾åƒ
 
-[R,C]=size(origin_gray); %»ñÈ¡Í¼Ïñ³ß´ç
-z=imhist(origin_gray); % »ñÈ¡»Ò¶ÈÖ±·½Í¼
+[R,C]=size(origin_gray); %Get the size of picture è·å–å›¾åƒå°ºå¯¸
+z=imhist(origin_gray); % get the histogram è·å–ç°åº¦ç›´æ–¹å›¾
 
-max=0;% ³õÊ¼»¯×î´óµÄ»Ò¶ÈÖµ
-min=256;%³õÊ¼»¯×îĞ¡µÄ»Ò¶ÈÖµ
-flag =0;% ±ê¼Ç
- max_index=255;
+max=0;% Initailize the max gray level åˆå§‹åŒ–æœ€å¤§çš„ç°åº¦å€¼
+min=256;%Initailize the min gray levelåˆå§‹åŒ–æœ€å°çš„ç°åº¦å€¼
+flag =0;% æ ‡è®°
+max_index=255;
 
 
-%% ÕÒµ½ãĞÖµ
-%ÕÒµ½»Ò¶È×î´óÖµ
+%% Find the thresholdæ‰¾åˆ°é˜ˆå€¼
+%Find the max gray level æ‰¾åˆ°ç°åº¦æœ€å¤§å€¼
 for  i=256:-1:1
     
     if z(i)>max;
@@ -29,7 +29,7 @@ for  i=256:-1:1
 end
 
 
-%ÕÒµ½×î´óÖµ×ó²àµÄµ¥µ÷ÉÏÉıÇøÓò
+% find the monotonic increasing interval to the left of the maximum æ‰¾åˆ°æœ€å¤§å€¼å·¦ä¾§çš„å•è°ƒä¸Šå‡åŒºåŸŸ
 for i=max_index:-1:1
     
     flag =0;
@@ -51,12 +51,12 @@ end
 decrease_index=i;
 
 
-% ÕÒµ½¹ÈÇøÓò
+% Find the valley interval æ‰¾åˆ°è°·åŒºåŸŸ
 for i=decrease_index:-1:1
     
     flag=0;
     
-    %±È½Ïµ±Ç°ÖµºÍÓÒ²àÖµ
+    % Compare current value with the value to the right æ¯”è¾ƒå½“å‰å€¼å’Œå³ä¾§å€¼
     cnt=0;
     for j=1:5
         if z(i+j) >= z(i)
@@ -69,7 +69,7 @@ for i=decrease_index:-1:1
     else flag =0;
     end
     
-    %±È½Ïµ±Ç°ÖµºÍ×ó²à
+    %ompare current value with the value to the left æ¯”è¾ƒå½“å‰å€¼å’Œå·¦ä¾§
     cnt=0;
     for j=-1:-1:-5
          if z(i+j) >= z(i)
@@ -90,21 +90,21 @@ for i=decrease_index:-1:1
     
 end
 
-%% ±³¾°±ä°×255
-%´¦ÀíÍ¼Ïñ
+%% èƒŒæ™¯å˜ç™½255
+%å¤„ç†å›¾åƒ
 
 % [Y,k,t1]=imadjust(origin_gray);
-% [Y,k,t1]=equalize(origin_gray);%³õÊ¼»¯Í¼Ïñ£¬Ö±·½Í¼¾ùºâ»¯
+% [Y,k,t1]=equalize(origin_gray);%åˆå§‹åŒ–å›¾åƒï¼Œç›´æ–¹å›¾å‡è¡¡åŒ–
 % 
 % origin_gray=Y;
 % 
 % level=min;
 
-% level=k*(level-t1);%¾ùºâ»¯ºóµÄ¹ÈÖµ
+% level=k*(level-t1);%å‡è¡¡åŒ–åçš„è°·å€¼
 
 level = min;
 
-BW2=im2bw(origin_gray,level/255);%¶şÖµ»¯
+BW2=im2bw(origin_gray,level/255);%äºŒå€¼åŒ–
 
 BW2=~BW2;
 
@@ -112,7 +112,7 @@ BW2=imfill(BW2,'holes');
 
 BW2=~BW2;
 
-% ÌáÈ¡ĞèÒªµÄÇøÓò
+% æå–éœ€è¦çš„åŒºåŸŸ
 for i=1:R
     for j=1:C
         if BW2(i,j) == 1
@@ -124,6 +124,6 @@ for i=1:R
 end
 
 
-Y=I; %Êä³ö°×É«±³¾°µÄÍ¼Æ¬
+Y=I; %è¾“å‡ºç™½è‰²èƒŒæ™¯çš„å›¾ç‰‡
 end
 
